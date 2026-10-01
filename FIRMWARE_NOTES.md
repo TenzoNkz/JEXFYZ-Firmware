@@ -1,22 +1,30 @@
 # JEXFYZ Firmware Notes
+## 2026-10-01 — FIRMWARE VERSIONING RULE / V2.4
+
+- Firmware source revision bumped **V2.3 → V2.4**.
+- V2.4 is the current source revision.
+- Existing production `JEXFYZ.cpp.bin` is not claimed as V2.4 until rebuilt from the exact V2.4 source.
+- Future functional firmware changes must increment the firmware version before release/OTA promotion.
 
 ## 2026-10-01 — FULL EXECUTION / AUTHORITATIVE SOURCE RECONCILIATION
 
-- Current firmware revision: **V2.3**.
-- Dedicated firmware repository currently contains the corrected **V2.3 source** (JEXFYZ-V2.3.ino) and the existing production BIN (JEXFYZ.cpp.bin). Older notes describing this repository as binary-only are superseded by the current repository state.
+- Current firmware revision: **V2.4**.
+- Dedicated firmware repository currently contains the corrected **V2.4 source** (JEXFYZ-V2.4.ino) and the existing production BIN (JEXFYZ.cpp.bin). The source is V2.4; the existing BIN is not yet promoted as V2.4.
 - Physical GPIO contract is frozen as:
   - **GPIO5 = PELTIER**
   - **GPIO6 = FAN**
 - App BLE/P1 command vocabulary remains logical and unchanged:
   - `FAN:ON/OFF` -> logical Fan state -> `PIN_FAN` -> GPIO6
   - `PELTIER:ON/OFF` -> logical Peltier state -> `PIN_PELTIER` -> GPIO5
-- V2.3 source now contains a compile-time `static_assert` that rejects accidental reversal of the two critical output pins.
+- V2.4 source contains the compile-time `static_assert` that rejects accidental reversal of the two critical output pins.
 - Static source audit confirms the Fan PWM writer uses `PIN_FAN`, while the Peltier soft-start/output path uses `PIN_PELTIER`.
 - Existing Peltier prerequisites remain intact: OTA inactive, valid NTC, safe Hotside temperature, and Fan ON.
 - The production `JEXFYZ.cpp.bin` was **not regenerated or modified** in this execution because a verified Arduino-ESP32 Core 3.3.7 compiler toolchain is not available here.
-- Source hardening commit: `21ceb9ceb3f7b7701a88367a0dbd13090949acc2`.
-- ArduinoDroid/Core 3.3.7 compile is still pending.
-- Physical flash/runtime validation is still pending. Do not call the GPIO correction hardware-validated until the corrected binary is flashed and both outputs are tested.
+- GPIO hardening commit: `21ceb9ceb3f7b7701a88367a0dbd13090949acc2`.
+- V2.4 version-bump source commit: `bd89ccfbe6aef846e35456fbf875d7ca68b90390`.
+- ArduinoDroid/Core 3.3.7 compile of the exact V2.4 source is still pending.
+- Physical flash/runtime validation is still pending. Do not call V2.4 hardware-validated until the exact V2.4 binary is flashed and both outputs are tested.
+- OTA publication boundary: Firebase firmware `version` remains unchanged until a verified V2.4 BIN exists.
 
 ## HISTORICAL RECORD — 2026-10-01 — INITIAL FAN / PELTIER OUTPUT FIX
 
