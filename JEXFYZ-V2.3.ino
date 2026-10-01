@@ -94,6 +94,8 @@ static constexpr uint8_t PIN_9V      = 4;
 // Observed hardware had the two output traces reversed relative to the previous source labels.
 static constexpr uint8_t PIN_PELTIER = 5;
 static constexpr uint8_t PIN_FAN     = 6;
+static_assert(PIN_PELTIER == 5 && PIN_FAN == 6,
+              "JE X FYZ output mapping contract violated");
 static constexpr uint8_t PIN_LED     = 7;
 static constexpr uint8_t LED_COUNT   = 8;
 
