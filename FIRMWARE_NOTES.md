@@ -1,4 +1,8 @@
 # JEXFYZ Firmware Notes
+## 2026-10-01 — CHAT RULES FINAL RECORDING UPDATE
+
+- `CHAT_RULES.md` now requires a maintenance-note record for every JE X FYZ project workflow/event, including audits, build/compile attempts, tests, failures, and no-change reviews when they establish validation status.
+- CHAT_RULES final mandatory event-recording commit: `48e962648a7fbe0ec71a732f518ac21e99086d1a`.
 ## 2026-10-01 — PROCESS RULE UPDATE / FIRMWARE VERSIONING ENFORCED
 
 - Project-wide `CHAT_RULES.md` now explicitly requires a firmware version increment for every functional firmware/source change before OTA candidacy.
