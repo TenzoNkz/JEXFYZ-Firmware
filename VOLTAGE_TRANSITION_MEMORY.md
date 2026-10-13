@@ -1,9 +1,9 @@
 # JE X FYZ / JE Cooler — Voltage Transition & Peltier Soft-Start Memory
 
-Updated: 2026-10-13 (Asia/Jakarta)
-Status: Active-ramp-only pause and uninterrupted 100% Peltier duty implemented in V6.3 source; compile/test/runtime/hardware result not yet validated for this revision.
-Active source blob: `4349126afaaf9ebe4f7aedce1ef084c9856ee579`.
-Regression contract blob: `950153f50964c87d3d41eca173f7fc39631d9ca7`.
+Updated: 2026-10-14 (Asia/Jakarta)
+Status: Active-ramp-only pause and uninterrupted 100% Peltier duty implemented in V6.4 source; compile/test/runtime/hardware result not yet validated for this revision.
+Active source blob: `f0dd9d1ebdc7d9d0966384f557efa2e2123df792`.
+Regression contract blob: `f071c9642c1a06726d25b8c26a814845b02a55d6`.
 
 ## Incident report
 
@@ -42,7 +42,7 @@ This rule applies to normal voltage changes requested in Manual Volt and while A
 
 ## Validation status and release boundary
 
-- [SOURCE FIX IMPLEMENTED] V6.3 pauses Peltier only when a voltage transition interrupts an active ramp; already-completed soft-start keeps PWM at 100% through the voltage change.
+- [SOURCE FIX IMPLEMENTED] V6.4 pauses Peltier only when a voltage transition interrupts an active ramp; already-completed soft-start keeps PWM at 100% through the voltage change.
 - [REGRESSION CONTRACT UPDATED — NOT RUN] The static Flutter test contract checks state capture, ordering, both resumption paths, stop-state cleanup, timing, and reset-reason diagnostics.
 - [STATIC REVIEW ONLY] No firmware compile, Dart/Flutter test, physical reproduction, supply/current measurement, thermal regression, or repeated Manual/Adaptive rail test has been performed for this revision.
 - The earlier user-reported compile result applied to a prior V6.3 revision and does not certify the current source.
