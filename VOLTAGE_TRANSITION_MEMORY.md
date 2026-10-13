@@ -1,55 +1,53 @@
 # JE X FYZ / JE Cooler — Voltage Transition & Peltier Soft-Start Memory
 
 Updated: 2026-10-13 (Asia/Jakarta)
-Status: Fix implemented in V6.3 source; compile/runtime/hardware result not yet validated for this revision.
-Active source blob: `2ad3ff2c4545a9fa6f659fdd11283116dc255ec2`.
-Regression contract blob: `c30cd8a2a522d67108ab718a703982a42270749b`.
+Status: Conditional resume rule implemented in V6.3 source; compile/test/runtime/hardware result not yet validated for this revision.
+Active source blob: `bb76b9c4e78b0e77d23bd82b13d23da6f623e985`.
+Regression contract blob: `0244ceaff0aa2366c3ebe2e0c13e7684f5b085cf`.
 
 ## Incident report
 
-[USER-REPORTED — 2026-10-13] On the physical hardware, the user selected 5 V, turned Peltier and Fan ON, then selected 12 V while the 5-second Peltier soft-start was still active. The hardware immediately restarted. The exact reset reason from that reproduction has not yet been supplied.
+[USER-REPORTED — 2026-10-13] The physical hardware restarted when changing from 5 V to 12 V with Peltier and Fan ON while the 5-second Peltier soft-start was still active. The exact reset reason from that reproduction has not been supplied. A supply transient/brownout remains a plausible hypothesis, not a confirmed cause.
 
-The failure path is consistent with a power-transient hypothesis: the prior firmware's voltage transition turned both selector outputs OFF for its 200 ms break-before-make interval, but it intentionally preserved the Peltier PWM state. The new rail could therefore be enabled while Peltier PWM remained at an in-progress duty cycle. PWM duty alone does not limit the peak voltage of an individual ON pulse; changing the rail can sharply change the Peltier's current demand. A supply dip/brownout is plausible but not proven until reset diagnostics are captured.
+## Current transition contract
 
-## Source correction applied
+This rule applies to normal voltage changes requested in Manual Volt and while Adaptive is active. It is based on the Peltier ramp state **when the voltage transition is accepted**:
 
-Source: [firmware/JEXFYZ-V6.3.ino](https://github.com/TenzoNkz/JEXFYZ-App/blob/main/firmware/JEXFYZ-V6.3.ino)
-Regression contract: [test/v6_3_qc_contract_test.dart](https://github.com/TenzoNkz/JEXFYZ-App/blob/main/test/v6_3_qc_contract_test.dart)
-
-The revised transition contract is:
-
-1. When a valid voltage transition is accepted while the logical Peltier state is ON, immediately command physical Peltier PWM on GPIO5 to 0% before de-asserting selector outputs. Keep the logical Peltier request ON so the App's state doesn't falsely change to OFF. The Fan remains on and is forced to 100% as before.
-2. De-assert both 9 V/12 V selector outputs and retain the existing 200 ms break-before-make period.
-3. Activate the accepted target rail only after the existing validation and transition checks.
-4. Keep Peltier PWM at 0% for a post-transition settle interval equal to the already-established 1-second voltage guard (`PELTIER_VOLTAGE_SETTLE_MS = VOLTAGE_GUARD_MS`). This reuses the known project guard rather than introducing an unrelated guessed duration.
-5. Start an entirely new 5-second, cooperative soft-start from 0% PWM after the settle interval. This applies whether the old duty was still ramping or had already reached 100%, making each rail change start from a known physical output state.
-6. If thermal/sensor safety, an explicit Peltier-OFF request, or OTA safety turns the logical Peltier state OFF, the normal stop helper cancels the pending voltage pause and prevents automatic restart.
-7. The change remains non-blocking: no `delay()` or timing `while()` was introduced.
+1. If Peltier is logically ON, capture whether `peltierSoftStarting` is true before changing ramp state; then force physical GPIO5 PWM to 0% before selector outputs are de-asserted. Preserve the logical ON request so the App does not report a false OFF. Fan remains enabled and is forced to 100%.
+2. Keep the existing 200 ms break-before-make selector interval.
+3. After selector completion, retain the existing 1,000 ms rail-settle wait through `PELTIER_VOLTAGE_SETTLE_MS = VOLTAGE_GUARD_MS`.
+4. If the saved flag says the 5-second soft-start was still in progress, begin a **new full 5-second ramp from 0%** after settling.
+5. If the saved flag says the soft-start had already completed, restore **100% PWM directly** after settling; do not add another 5-second ramp.
+6. If Peltier is OFF, do not enable it because of a voltage change. If an explicit Peltier-OFF request, thermal/sensor safety, or OTA safe-output path stops it during the transition, clear the saved resume state so it cannot restart automatically.
+7. Adaptive entry/exit remains its separate safe-5V mode handoff: it intentionally switches Peltier OFF and, when allowed, restores it through the normal OFF→ON 5-second soft-start. Adaptive's subsequent ordinary rail changes use the conditional rule above. Adaptive thermal HOTSTEP safety may deliberately force Peltier OFF and must take priority.
+8. The transition remains cooperative/non-blocking; no `delay()` or timing `while()` is introduced.
 
 ## Timing contract
 
-- Selector break-before-make: 200 ms (existing setting).
-- Post-selector Peltier settle: 1,000 ms, aliased to the current shared voltage guard.
-- Peltier PWM soft-start after settling: 5,000 ms.
-- The 1-second interval is a conservative software dwell using the existing guard; it is not laboratory proof of the actual supply rail's electrical settling time. Hardware validation is still required.
+- Selector break-before-make: 200 ms.
+- Post-selector settle: 1,000 ms using the pre-existing shared guard.
+- Interrupted ramp: fresh 5,000 ms soft-start after settling.
+- Completed ramp: PWM returns directly to 100% after settling.
+- The 1-second interval is an existing software guard, not laboratory proof of the rail's electrical settling time. Hardware validation remains required.
 
 ## Regression safeguards
 
-- The source must call `pausePeltierForVoltageTransition()` after a transition is accepted and before either selector output is switched OFF.
-- The pause helper must set the pause state, cancel the prior ramp timer, and write GPIO5 PWM to 0%.
-- While `voltageTransition` is active, `processPeltierSoftStart()` must fail closed at 0% PWM.
-- After selector completion, Peltier may not ramp until `PELTIER_VOLTAGE_SETTLE_MS` has elapsed from `lastVoltageTransitionCompleteMs`; it must then call `beginPeltierSoftStart()`.
-- Keep the 200 ms break-before-make, 1-second voltage guard, 5-second soft start, existing Hotside/sensor latches, safe output path, and non-blocking main loop.
-- Keep the `RESET_REASON` / boot serial diagnostic mapping for `BROWNOUT`. If the hardware restarts again, record `BOOT: RESET_REASON=...` and the App `RESET_REASON` telemetry before drawing a stronger root-cause conclusion.
+- In `requestVoltage()`, accepted transition state is recorded before `pausePeltierForVoltageTransition()`; the pause must happen before selector outputs are switched OFF.
+- The pause helper must snapshot `peltierSoftStarting` into `peltierVoltageResumeSoftStart` before clearing the active ramp and forcing PWM to 0%.
+- While `voltageTransition` is active, Peltier processing must fail closed.
+- After `PELTIER_VOLTAGE_SETTLE_MS`, resume branches on the captured flag: a fresh ramp only for the previously active soft-start; otherwise full duty is restored.
+- `stopPeltierOutput()` must clear both pending pause and saved-resume state.
+- Preserve the 200 ms deadtime, 1-second guard, 5-second OFF→ON soft-start, Hotside/sensor safety latches, safe output path, and cooperative main loop.
+- Keep serial boot diagnostics and App `RESET_REASON` telemetry for `BROWNOUT`. If the hardware restarts again, record `BOOT: RESET_REASON=...` and the App telemetry before drawing a stronger root-cause conclusion.
 
 ## Validation status and release boundary
 
-- [SOURCE FIX IMPLEMENTED] A static source correction and regression contract have been committed.
-- [TEST ADDED — NOT RUN] `test/v6_3_qc_contract_test.dart` asserts Peltier is paused before selector outputs move, waits the settle interval, restarts a fresh ramp, and retains reset-reason diagnostics. Test execution is not claimed.
-- [NOT VERIFIED] Firmware compilation for this revision, physical reproduction, actual brownout behavior, temperature/cooling behavior, and repeated manual/Adaptive voltage transitions have not been validated.
-- The previous user report that the earlier V6.3 version compiled does not establish that this new revision compiles.
-- No BIN was generated or published, no Firebase metadata was changed, and no device was flashed/OTA-updated in this change.
+- [SOURCE FIX IMPLEMENTED] V6.3 now distinguishes an interrupted ramp from a completed ramp.
+- [REGRESSION CONTRACT UPDATED — NOT RUN] The static Flutter test contract checks state capture, ordering, both resumption paths, stop-state cleanup, timing, and reset-reason diagnostics.
+- [STATIC REVIEW ONLY] No firmware compile, Dart/Flutter test, physical reproduction, supply/current measurement, thermal regression, or repeated Manual/Adaptive rail test has been performed for this revision.
+- The earlier user-reported compile result applied to a prior V6.3 revision and does not certify the current source.
+- No BIN was generated or published, no Firebase metadata was changed, and no device was flashed or OTA-updated by this change.
 
 ## Future-change rule
 
-Do not remove the Peltier pause or preserve its old PWM across a rail transition without discussion and explicit user approval. Any change to transition sequencing or timing must update the regression contract and this memory first. Treat reset causality as a hypothesis until real reset diagnostics and, ideally, supply/Peltier current measurements support it.
+Do not remove the state snapshot, unconditionally restart the 5-second soft-start, or restore full duty without respecting Peltier-OFF/safety cancellation. Any transition timing or behavior change must update the source-level contract and this memory first. Reset causality remains a hypothesis until real diagnostics and, ideally, supply/Peltier current measurements support it.
