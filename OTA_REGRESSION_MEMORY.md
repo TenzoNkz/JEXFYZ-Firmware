@@ -4,6 +4,8 @@ Updated: 2026-10-13 (Asia/Jakarta)
 
 This repository primarily stores the OTA binary, not editable firmware source. Canonical source and the full engineering incident log are in [TenzoNkz/JEXFYZ-App / OTA_REGRESSION_MEMORY.md](https://github.com/TenzoNkz/JEXFYZ-App/blob/main/OTA_REGRESSION_MEMORY.md).
 
+Related electrical/selector restart issue is tracked separately in [VOLTAGE_TRANSITION_MEMORY.md](https://github.com/TenzoNkz/JEXFYZ-App/blob/main/VOLTAGE_TRANSITION_MEMORY.md).
+
 ## Incident record
 
 - User reported that V6.3 connected to Wi-Fi (blue indicator) then showed red at the GitHub connection stage after a change to CA-based HTTPS validation.
