@@ -15,6 +15,10 @@ V6.3 source was restored to the previously working `cloudClient.setInsecure()` p
 
 Read the canonical [OTA Regression Memory in the source repository](https://github.com/TenzoNkz/JEXFYZ-App/blob/main/OTA_REGRESSION_MEMORY.md) before changing or publishing OTA firmware.
 
+## Voltage transition / Peltier soft-start regression memory
+
+The editable V6.3 source now pauses Peltier PWM at 0% before rail selector changes, preserves the existing 200 ms break-before-make interval, waits the existing 1-second voltage guard after rail completion, and starts a fresh 5-second soft-start. The latest source revision has not been compiled or hardware-validated in the assistant's workflow. See the [canonical source memory](https://github.com/TenzoNkz/JEXFYZ-App/blob/main/VOLTAGE_TRANSITION_MEMORY.md) and the [mirrored artifact-repository note](VOLTAGE_TRANSITION_MEMORY.md). This documentation-only update does not modify the BIN.
+
 ## Release guardrails
 
 - Do not replace/publish `JEXFYZ.cpp.bin`, change Firebase/production metadata, flash a device, or perform a release without explicit authorization.
