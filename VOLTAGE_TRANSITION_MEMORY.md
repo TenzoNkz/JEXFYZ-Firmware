@@ -2,7 +2,7 @@
 
 Updated: 2026-10-13 (Asia/Jakarta)
 Status: Active-ramp-only pause and uninterrupted 100% Peltier duty implemented in V6.3 source; compile/test/runtime/hardware result not yet validated for this revision.
-Active source blob: `05fffbc64a4b91b6bd749d5e084507114b773219`.
+Active source blob: `53df1c606c793f82345efacb13f770121a9cd886`.
 Regression contract blob: `950153f50964c87d3d41eca173f7fc39631d9ca7`.
 
 ## Incident report
