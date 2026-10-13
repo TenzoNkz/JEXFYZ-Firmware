@@ -17,7 +17,7 @@ Read the canonical [OTA Regression Memory in the source repository](https://gith
 
 ## Voltage transition / Peltier soft-start regression memory
 
-The editable V6.3 source now pauses Peltier PWM at 0% before rail selector changes, preserves the existing 200 ms break-before-make interval, waits the existing 1-second voltage guard after rail completion, and starts a fresh 5-second soft-start. The latest source revision has not been compiled or hardware-validated in the assistant's workflow. See the [canonical source memory](https://github.com/TenzoNkz/JEXFYZ-App/blob/main/VOLTAGE_TRANSITION_MEMORY.md) and the [mirrored artifact-repository note](VOLTAGE_TRANSITION_MEMORY.md). This documentation-only update does not modify the BIN.
+The editable V6.3 source snapshots whether the 5-second Peltier soft-start is active before rail selector changes, pauses PWM at 0%, preserves the existing 200 ms break-before-make interval, and waits the existing 1-second voltage guard. If the ramp was active, it restarts a full 5-second soft-start from 0%; if already complete, it restores full PWM (100%) without re-ramping. Peltier-OFF/safety clears pending automatic resume. The latest source revision has not been compiled or hardware-validated in the assistant's workflow. See the [canonical source memory](https://github.com/TenzoNkz/JEXFYZ-App/blob/main/VOLTAGE_TRANSITION_MEMORY.md) and the [mirrored artifact-repository note](VOLTAGE_TRANSITION_MEMORY.md). This documentation-only update does not modify the BIN.
 
 ## Release guardrails
 
