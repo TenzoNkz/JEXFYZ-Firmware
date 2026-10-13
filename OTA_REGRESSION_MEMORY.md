@@ -1,8 +1,8 @@
 # JE X FYZ — Online OTA Regression Memory (Artifact Repository)
 
-Updated: 2026-10-13 (Asia/Jakarta)
+Updated: 2026-10-14 (Asia/Jakarta)
 
-This repository primarily stores the OTA binary, not editable firmware source. Canonical source and the full engineering incident log are in [TenzoNkz/JEXFYZ-App / OTA_REGRESSION_MEMORY.md](https://github.com/TenzoNkz/JEXFYZ-App/blob/main/OTA_REGRESSION_MEMORY.md).
+This repository primarily stores the OTA binary, not editable firmware source. The active editable source is now `firmware/JEXFYZ-V6.4.ino` in [TenzoNkz/JEXFYZ-App](https://github.com/TenzoNkz/JEXFYZ-App); the V6.3 references below describe the historical revision where the Online OTA correction was first applied. The full engineering incident log is in [TenzoNkz/JEXFYZ-App / OTA_REGRESSION_MEMORY.md](https://github.com/TenzoNkz/JEXFYZ-App/blob/main/OTA_REGRESSION_MEMORY.md).
 
 Related electrical/selector restart issue is tracked separately in [VOLTAGE_TRANSITION_MEMORY.md](https://github.com/TenzoNkz/JEXFYZ-App/blob/main/VOLTAGE_TRANSITION_MEMORY.md).
 
@@ -11,7 +11,7 @@ Related electrical/selector restart issue is tracked separately in [VOLTAGE_TRAN
 - User reported that V6.3 connected to Wi-Fi (blue indicator) then showed red at the GitHub connection stage after a change to CA-based HTTPS validation.
 - Source at the time contained an embedded ISRG Root X1 certificate applied with `cloudClient.setCACert(GITHUB_ROOT_CA)`, plus an OTA-only NTP time-sync gate (`configTime()`, `TIME_SYNCING`, 20-second timeout).
 - Source was restored to `cloudClient.setInsecure()`; the CA PEM and OTA-only NTP gate were removed. Blue Wi-Fi feedback now precedes the GitHub GET attempt.
-- User reports the corrected V6.3 compiled successfully and Online OTA could connect to GitHub again.
+- [HISTORICAL USER REPORT] User reported the corrected V6.3 revision compiled successfully and Online OTA could connect to GitHub again. This does not validate V6.4 or prove that the repository BIN matches its source.
 - Do not claim an independently reproduced build or end-to-end OTA completion from this note. A full transfer, `Update.end()`, successful restart, and confirmation of the installed version need separate evidence.
 - The change removed CA validation and the NTP gate together, so available evidence does not isolate either as the sole cause. The user attributes the failure to the CA addition; preserve that as the user's conclusion, not as a single-variable controlled experiment.
 
