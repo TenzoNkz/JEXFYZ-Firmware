@@ -2,6 +2,8 @@
 
 Updated: 2026-10-13 (Asia/Jakarta)
 Status: Fix implemented in V6.3 source; compile/runtime/hardware result not yet validated for this revision.
+Active source blob: `61237855ad87878553828ac7c37830d754b7fd9e`.
+Regression contract blob: `c30cd8a2a522d67108ab718a703982a42270749b`.
 
 ## Incident report
 
